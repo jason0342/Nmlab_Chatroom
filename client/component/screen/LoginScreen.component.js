@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import EventEmitter from "react-native-eventemitter";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
-import SocketConnector from "src/component.SocketConnector.component.js"
-import styles from 'src/style/main.style.js';
-import EmptyDOM from 'src/component/EmptyDOM.component.js';
+import SocketConnector from '../SocketConnector.component.js'
+import styles from '../../style/main.style.js';
+import EmptyDOM from '../EmptyDOM.component.js';
 
 class LoginScreen extends Component {
   constructor(props) {
@@ -68,7 +68,7 @@ class LoginScreen extends Component {
     //     Alert.alert('Incorrect password!', '')
     //   }
     // })
-    
+
   }
 }
 

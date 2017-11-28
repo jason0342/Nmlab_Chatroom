@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { Text, View, TouchableOpacity, Image, Alert } from 'react-native';
 import EventEmitter from "react-native-eventemitter";
-import SocketConnector from "src/component.SocketConnector.component.js"
-import styles from 'src/style/main.style.js';
-import EmptyDOM from 'src/component/EmptyDOM.component.js';
-import Grid from 'src/component/Grid.component.js';
+import SocketConnector from "../SocketConnector.component.js"
+import styles from '../../style/main.style.js';
+import EmptyDOM from '../EmptyDOM.component.js';
+import Grid from '../Grid.component.js';
 
 class MainScreen extends Component {
   constructor(props) {
@@ -47,7 +47,7 @@ class MainScreen extends Component {
       return <Grid
         key={index}
         value={value}
-        onGridPress={() => {this.enterRoom(index)}} 
+        onGridPress={() => {this.enterRoom(index)}}
       />;
     });
   }

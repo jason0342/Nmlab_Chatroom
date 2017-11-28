@@ -1,6 +1,6 @@
 import React from 'react'
 import SocketIOClient from 'socket.io-client';
-import AppConstants from 'src/constant/AppConstants.js'
+import AppConstants from '../constant/AppConstants.js'
 
 class SocketConnector {
   constructor() {

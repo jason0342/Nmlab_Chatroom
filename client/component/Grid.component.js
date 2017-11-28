@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { View, Image, TouchableOpacity } from 'react-native';
-import styles from 'src/style/main.style.js';
+import styles from '../style/main.style.js';
 
 class Grid extends Component {
 	constructor(props) {
