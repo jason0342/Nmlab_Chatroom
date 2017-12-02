@@ -1,45 +1,84 @@
-const SocketIOClient = require('socket.io-client')
-const user = 'topjohnwu'
-const room = 'test_room'
+const SocketIOClient = require('socket.io-client');
+const fetch = require('node-fetch');
 
-let socket = SocketIOClient('http://localhost:8888')
+const id = 'topjohnwu';
+const pwd = 'happy123';
 
-/**********************
- * Register callbacks *
- **********************/
+let user_list;
 
-socket.on('connect', () => {
-	console.log(`Connect with id[${socket.io.engine.id}]`)
+// Login
+fetch('http://localhost:8888/login', {
+	method: 'POST',
+	headers: { 'Content-Type': 'application/json' },
+	body: JSON.stringify({ id: id, pwd: pwd })
 })
+.then(res => res.json())
+.then(json => {
+	if (json.status) {
 
-/* This is a callback when the room has a new msg */
-socket.on('NEW_MSG', (msg) => {
-	console.log(msg)
-})
+		// If login success, initialize a socket connection
+		let socket = SocketIOClient('http://localhost:8888')
 
-/* This is a callback when a new room is added */
-socket.on('NEW_ROOM', (room) => {
-	console.log(room)
-})
+		// ACK immediately
+		socket.on('connect', () => {
+			console.log(`Connect with id[${socket.io.engine.id}]`)
+			socket.emit("ACK", id);
+		})
 
-socket.on('disconnect', () => {})
+		// Monitor user list in idle screen
+		socket.on('USER_UPDATE', (user) => {
+			/* TIP for UI: if user id is not in user list, add to user list,
+			 * else update the online status of user
+			 */
+			console.log(user)
+		})
 
-/********************
- * Actions examples *
- ********************/
 
-// Join a room
-socket.emit('JOIN_ROOM', room)
+		fetch('http://localhost:8888/users')
+			.then(res => res.json())
+			.then(json => {
+				user_list = json;
+				// TODO: Populate UI with user_list
+				console.log(user_list);
+			})
 
-/* This sends a msg to the current room
- * use it after joining a room */
-socket.emit('SEND_MSG', {
-	room: room,
-	payload: {
-		user: user,
-		msg: 'Hello World!'
+		/***************************
+		 * Example: Chat with test *
+		 ***************************/
+
+		// Assume user selected the user 'test' to start chat
+
+		fetch('http://localhost:8888/chat', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ id: id, with: 'test' })
+		})
+		.then(res => res.json())
+		.then(json => {
+			// TODO: Populate UI with msg list
+			console.log(json.msgs)
+
+			socket.on('NEW_MSG', (msg) => {
+				// TODO: Add new msg to UI
+				console.log(msg)
+			})
+
+			// Join the room
+			socket.emit('JOIN_ROOM', json.room)
+
+			/* This sends a msg to the current room
+			 * use it after joining a room */
+			socket.emit('SEND_MSG', {
+				room: json.room,
+				payload: {
+					id: id,
+					msg: 'Hello World!'
+				}
+			})
+
+			// If the user leaves the chat screen, leave the room and unregister
+			socket.emit('LEAVE_ROOM', json.room);
+			socket.removeAllListeners("NEW_MSG");
+		})
 	}
 })
-
-// Leave the room
-socket.emit('LEAVE_ROOM', room);
