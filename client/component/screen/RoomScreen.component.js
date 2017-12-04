@@ -7,26 +7,28 @@ import EmptyDOM from '../EmptyDOM.component.js';
 import Grid from '../Grid.component.js';
 import AppConstants from '../../constant/AppConstants.js'
 
-class MainScreen extends Component {
+class RoomScreen extends Component {
   constructor(props) {
     super(props);
-    this.logout = this.logout.bind(this);
-    this.enterRoom = this.enterRoom.bind(this);
+    const naviParams = this.props.navigation.state.params;
+    this.leaveRoom = this.leaveRoom.bind(this);
     this.state = {
       // roomList: [[true,'abc','def'], [false,'123','456']],
       roomList: []
     }
-    fetch(AppConstants.SERVER_URL+'/users')
+    fetch(AppConstants.SERVER_URL+'/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: naviParams.userID, with: naviParams.id })
+    })
     .then((res) => res.json())
     .then((json) => {
-      user_list = json;
       // TODO: Populate UI with user_list
-      this.setState({roomList: user_list});
-      // console.log('a', this.roomList);
+      console.log(json.msgs)
     });
   }
   componentWillMount() {
-    EventEmitter.on('USER_UPDATE', (user) => {})
+    EventEmitter.on('NEW_MSG', (msg) => {})
     // console.log('b', this.roomList);
   }
   static navigationOptions = {
@@ -37,16 +39,16 @@ class MainScreen extends Component {
     return (
       <View style={styles.container}>
         <View style={[styles.header, styles.alignCenter]}>
-          <Text style={[styles.headerText]}>Chat Room</Text>
+          <Text style={[styles.headerText]}>naviParams.id</Text>
         </View>
         <View style={[styles.main]}>
-          {this.renderRoomList()}
+          {this.renderChat()}
         </View>
         <View style={[styles.footer, styles.alignCenter]}>
           <EmptyDOM />
           <TouchableOpacity
             style={[styles.loginButton, styles.alignCenter]}
-            onPress={this.logout}>
+            onPress={this.leaveRoom}>
             <Text style={[styles.loginButtonText]}>Logout</Text>
           </TouchableOpacity>
           <EmptyDOM />
@@ -54,25 +56,12 @@ class MainScreen extends Component {
       </View>
     );
   }
-  logout() {
-    SocketConnector.stopConnection()
+  leaveRoom() {
     this.props.navigation.goBack(null);
   }
-  renderRoomList() {
-    return this.state.roomList.map((value, index) => {
-      return <Grid
-        key={value.id}
-        value={value}
-        onGridPress={() => {this.enterRoom(value.id)}}
-      />;
-    });
-  }
-  enterRoom(id) {
-    this.props.navigation.navigate('Room', {
-      selfID: this.props.navigation.state.params.userName,
-      id: id,
-    });
+  renderChat() {
+    
   }
 }
 
-module.exports = MainScreen;
+module.exports = RoomScreen;

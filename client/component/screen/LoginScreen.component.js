@@ -4,6 +4,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'reac
 import SocketConnector from '../SocketConnector.component.js'
 import styles from '../../style/main.style.js';
 import EmptyDOM from '../EmptyDOM.component.js';
+import AppConstants from '../../constant/AppConstants.js'
 
 class LoginScreen extends Component {
   constructor(props) {
@@ -50,24 +51,27 @@ class LoginScreen extends Component {
     );
   }
   onLogin() {
-    this.props.navigation.navigate('Main');
-    // fetch('url', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Accept': 'application/json',
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({userName: this.state.userName, password: this.state.password})
-    // })
-    // .then((response) => response.json())
-    // .then((responseJson) => {
-    //   if(responseJson) {
-    //     this.props.navigation.navigate('Main');
-    //   }
-    //   else {
-    //     Alert.alert('Incorrect password!', '')
-    //   }
-    // })
+    // this.props.navigation.navigate('Main');
+    fetch(AppConstants.SERVER_URL + '/login', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({id: this.state.userName, pwd: this.state.password})
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if(responseJson.status) {
+        SocketConnector.startConnection(this.state.userName);
+        this.props.navigation.navigate('Main', {
+          userName: this.state.userName,
+        });
+      }
+      else {
+        Alert.alert('Incorrect password!', '')
+      }
+    })
 
   }
 }

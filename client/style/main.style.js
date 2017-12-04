@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
 	},
   roomGridButton:{
     flex:1,
-    backgroundColor: 'steelblue',
+    // backgroundColor: 'steelblue',
     borderRadius: 12,
     flexDirection: 'row',
   },

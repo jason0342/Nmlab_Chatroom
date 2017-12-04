@@ -12,7 +12,7 @@ let sock_user_map = {}
 let test_user = {
 	id: 'test',
 	pwd: '123',
-	online: false
+	online: true
 };
 user_list.push(test_user);
 
