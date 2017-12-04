@@ -16,10 +16,10 @@ class Grid extends Component {
             (this.props.value.online?{backgroundColor: 'lightgreen'}:{backgroundColor: 'steelblue'})]}
           onPress={this.props.onGridPress}>
           <View style={[styles.roomGridPictureView]}>
-            <View style={[styles.roomGridPicture]}/>
+            <View style={[styles.roomGridPictureBox]}/>
           </View>
           <View style={[styles.roomGridTextView]}>
-            <View style={[styles.roomGridText]}>
+            <View style={[styles.roomGridTextBox]}>
               <Text style={[styles.loginButtonText]}>{this.props.value.id}</Text>
             </View>
           </View>

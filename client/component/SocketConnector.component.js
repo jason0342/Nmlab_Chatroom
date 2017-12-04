@@ -17,15 +17,15 @@ class SocketConnector {
     }).bind(this));
 
     this.socket.on('USER_UPDATE', (user) => {
-      console.log(user)
+      // console.log(user)
       EventEmitter.emit('USER_UPDATE', user)
       // do something...
     });
 
     this.socket.on('NEW_MSG', (msg) => {
       // TODO: Add new msg to UI
-      console.log(msg)
-      EventEmitter.emit('NEW_MST', msg)
+      // console.log(msg)
+      EventEmitter.emit('NEW_MSG', msg)
     })
   }
 

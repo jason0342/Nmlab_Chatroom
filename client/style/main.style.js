@@ -13,6 +13,7 @@ const styles = StyleSheet.create({
 	main: {
 		flex:6,
 		backgroundColor: 'skyblue',
+    paddingBottom:6,
 	},
 	footer: {
 		flexDirection:'row',
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
 	},
 	headerText: {
 	  color: 'navy',
-	  fontSize: 36,
+	  fontSize: 40,
 	},
 	footerText: {
 	  color: 'white',
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     paddingLeft: 9,
     paddingRight: 0,
   },
-  roomGridPicture:{
+  roomGridPictureBox:{
     flex:1,
     backgroundColor: 'white',
     borderRadius: 12,
@@ -84,11 +85,72 @@ const styles = StyleSheet.create({
     paddingLeft: 9,
     paddingRight: 9,
   },
-  roomGridText:{
+  roomGridTextBox:{
     flex:1,
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 9,
+  },
+  chatGrid:{
+    aspectRatio: 8,
+    paddingTop: 6,
+    paddingHorizontal: 6,
+    // paddingTop: 3,
+    flexDirection: 'row',
+  },
+  chatTextViewSelf:{
+    flex:2,
+    backgroundColor: '#0084ff',
+    borderRadius: 12,
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+  },
+  chatTextSelf:{
+    color:'white',
+    fontSize:24,
+    textAlign:'center',
+  },
+  chatTextView:{
+    flex:2,
+    backgroundColor: '#dddddd',
+    borderRadius: 12,
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+  },
+  chatText:{
+    color:'black',
+    fontSize:24,
+    textAlign:'center',
+  },
+  chatFooter:{
+    flex:3,
+    flexDirection:'row',
+  },
+  chatTextInputView:{
+    flex:4,
+    padding:12,
+  },
+  chatTextInput:{
+    flex:1,
+    fontSize: 24,
+    borderRadius: 12,
+    backgroundColor: 'white',
+    paddingLeft: 12,
+    paddingRight: 12,
+  },
+  sendChatTextButtonView:{
+    flex:1,
+    paddingRight:12,
+    paddingVertical:12,
+  },
+  sendChatTextButton:{
+    flex:1,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  sendButtonText:{
+    fontSize:18,
   },
 	defaultImage: {
 		flex:1,

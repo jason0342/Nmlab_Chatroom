@@ -12,22 +12,27 @@ class MainScreen extends Component {
     super(props);
     this.logout = this.logout.bind(this);
     this.enterRoom = this.enterRoom.bind(this);
+    this.updateRoomList = this.updateRoomList.bind(this);
     this.state = {
       // roomList: [[true,'abc','def'], [false,'123','456']],
-      roomList: []
+      roomList: [],
+      userName: this.props.navigation.state.params.userName,
     }
     fetch(AppConstants.SERVER_URL+'/users')
     .then((res) => res.json())
     .then((json) => {
       user_list = json;
-      // TODO: Populate UI with user_list
       this.setState({roomList: user_list});
-      // console.log('a', this.roomList);
     });
   }
   componentWillMount() {
-    EventEmitter.on('USER_UPDATE', (user) => {})
-    // console.log('b', this.roomList);
+    EventEmitter.on('USER_UPDATE', (user) => {
+      // console.log(user);
+      this.updateRoomList(user);
+    })
+  }
+  componentWillUnmount() {
+    EventEmitter.removeAllListeners("USER_UPDATE");
   }
   static navigationOptions = {
     header: null ,
@@ -55,11 +60,12 @@ class MainScreen extends Component {
     );
   }
   logout() {
-    SocketConnector.stopConnection()
+    SocketConnector.stopConnection();
     this.props.navigation.goBack(null);
   }
   renderRoomList() {
     return this.state.roomList.map((value, index) => {
+      if(value.id == this.state.userName) return;
       return <Grid
         key={value.id}
         value={value}
@@ -69,9 +75,20 @@ class MainScreen extends Component {
   }
   enterRoom(id) {
     this.props.navigation.navigate('Room', {
-      selfID: this.props.navigation.state.params.userName,
+      selfID: this.state.userName,
       id: id,
     });
+  }
+  updateRoomList(user) {
+    let i = this.state.roomList.findIndex((value) => {
+      return value.id == user.id;
+    });
+    if(i == -1) this.setState({roomList: [...this.state.roomList, user]});
+    else {
+      let roomList = this.state.roomList;
+      roomList[i] = user;
+      this.setState({roomList});
+    }
   }
 }
 
