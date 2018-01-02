@@ -11,17 +11,11 @@ class ChatGrid extends Component {
     return (
       <View>
         {this.props.isSelf ? 
-        <View style={[styles.chatGrid]}>
-          <EmptyDOM/>
-          <View style={[styles.chatTextViewSelf]}>
-            <Text style={[styles.chatTextSelf]}>{this.props.text}</Text>
-          </View>
+        <View style={[styles.chatTextViewSelf]}>
+          <Text style={[styles.chatTextSelf]}>{this.props.text}</Text>
         </View> :
-        <View style={[styles.chatGrid]}>
-          <View style={[styles.chatTextView]}>
-            <Text style={[styles.chatText]}>{this.props.text}</Text>
-          </View>
-          <EmptyDOM/>
+        <View style={[styles.chatTextView]}>
+          <Text style={[styles.chatText]}>{this.props.text}</Text>
         </View>
         }
       </View>
