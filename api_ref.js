@@ -2,21 +2,20 @@
  * Client side actions *
  **********************/
 
- // Client side should "emit" these events
+// Client side should "emit" these events
 
 'ACK'
-'JOIN_ROOM'
-'LEAVE_ROOM'
 'SEND_MSG'
 
 /*************************
  * Client side callbacks *
  *************************/
 
- // Client side should listen to these events
+// Client side should listen to these events
 
 'USER_UPDATE'
 'NEW_MSG'
+'<event>'  /* The read notify event name is passed to client from server */
 
 /**********
  * Logins *
@@ -31,9 +30,7 @@ let login_req = {
 }
 
 // response body
-let login_res = {
-	status: 'boolean'
-}
+let login_res = { status: 'boolean' }
 
 /* After login, connect a socket, and ack the server with your user name! */
 
@@ -48,9 +45,12 @@ let login_res = {
 // Use this URL with GET, return a list of user_res.
 let list_user_url = '<server_ip>:8888/users'
 
+// The response from using list_user_url
+let user_list = [ 'user_res' ]
+
 // This will be sent via USER_UPDATE event and list_user_url
 let user_res = {
-	id: 'string'
+	id: 'string',
 	online: 'boolean'
 }
 
@@ -63,16 +63,20 @@ let user_res = {
  * then be handled by sockets via NEW_MSG event */
 
 // Use this URL with POST, request body and response are defined below
-let chat_url = '<server_ip>:8888/chat'
+let msgs_url = '<server_ip>:8888/msgs'
 
-let chat_req = {
+// The body for msgs_url
+let msgs_req = {
 	id: 'string',    /* who are you */
-	with: 'string'   /* who are you chatting with */
+	dest: 'string',  /* who are you chatting with */
+	idx: 'integer',  /* the index got from previous response. Set to 0 for the first request */
 }
 
-let chat_res = {
-	room: 'string',      /* The sever will give you a room id, use this in sending msgs */
-	msgs: [ 'msg_res' ]  /* A list of previous msgs */
+// The response of using msgs_url
+let msgs_res = {
+	msgs: [ 'msg_res' ],  /* A list of msgs */
+	event: 'string',      /* The event to listen for read events */
+	next: 'integer',      /* the index for the next request, 0 if no more is available */
 }
 
 
@@ -80,12 +84,9 @@ let chat_res = {
  * This is what should be sent to server with SEND_MSG
  * the payload is a msg object */
 
-let msg_req = {
-	room: 'string',  /* The room id you get from POST response of chat_url (chat_res.room) */
-	payload: {
-		id: 'string',
-		msg: 'string'
-	}
+let send_req = {
+	dest: 'string',  /* yout target's id */
+	msg: 'string',   /* the msg */
 }
 
 /* Response body of NEW_MSG
@@ -93,14 +94,9 @@ let msg_req = {
  * A list of msg_res will also be sent as POST response body via chat_url */
 
 let msg_res = {
+	timestamp: 'integer',  /* A timestamp is added in the server side, use this as an unique ID for the msg */
 	id: 'string',
+	dest: 'string'
 	msg: 'string',
-	timestamp: 'integer'  /* A timestamp is added in the server side */
+	read: 'integer',       /* the time when dest read the msg, -1 if not read yet */
 }
-
-/******************
- * Data Structure *
- *****************/
-
-/* Each room consist of a list of msgs
- * Each msg is stored in the format of msg_res */

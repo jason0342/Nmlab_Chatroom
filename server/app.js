@@ -4,10 +4,36 @@ const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const bodyParser = require('body-parser')
 
+class SocketUserMap {
+	constructor() {
+		this.s2u = {};
+		this.u2s = {};
+	}
+
+	addPair(socket, userid) {
+		this.s2u[socket.id] = userid;
+		this.u2s[userid] = socket;
+	}
+
+	remove(socket) {
+		let userid = this.getUser(socket.id);
+		delete this.s2u[socket.id];
+		delete this.u2s[userid];
+	}
+
+	getSocket(userid) {
+		return this.u2s[userid];
+	}
+
+	getUser(socket) {
+		return this.s2u[socket.id];
+	}
+}
+
 // TODO: Use MongoDB
 let user_list = []
 let room_list = {}
-let sock_user_map = {}
+let mapping = new SocketUserMap();
 
 let test_user = {
 	id: 'test',
@@ -17,17 +43,23 @@ let test_user = {
 user_list.push(test_user);
 
 function getUserFromDB(id) {
-	let filtered = user_list.filter((user) => user.id === id);
+	let filtered = user_list.filter(user => user.id === id);
 	if (filtered.length > 0)
 		return filtered[0];
 	else
 		return null;
 }
 
-function stripPwd(user) {
-	return {
-		id: user.id,
-		online: user.online
+const stripPwd = user => { return { id: user.id, online: user.online } }
+
+const getRoom = (a, b) => [a, b].sort().join();
+
+const msgRead = (msg, id) => {
+	if (msg.read === -1 && msg.dest === id) {
+		let event = getRoom(msg.id, msg.dest);
+		msg.read = Date.now();
+		console.log(`READ_${event}: `, msg);
+		io.emit(event, { timestamp: msg.timestamp, read: msg.read });
 	}
 }
 
@@ -44,61 +76,66 @@ app.post('/login', (req, res) => {
 	} else {
 		req_user.online = false;
 		user_list.push(req_user);
-		io.emit('USER_UPDATE', req_user);
 		res.json({ status: true });
 	}
 })
 
 app.get('/users', (req, res) => {
-	res.json(user_list.map(user => stripPwd(user)));
+	res.json(user_list.map(stripPwd));
 })
 
-app.post('/chat', (req, res) => {
-	let pair = [];
-	pair.push(req.body.id);
-	pair.push(req.body.with);
-	let room = pair.sort().join();
+app.post('/msgs', (req, res) => {
+	let room = getRoom(req.body.id, req.body.dest);
 	if (!room_list[room])
 		room_list[room] = [];
+	let idx = req.body.idx == 0 ? room_list[room].length : req.body.idx;
+	let next = idx - 10 > 0 ? idx - 10 : 0;
+	let msgs = room_list[room].slice(next, idx);
+	// Mark all msgs as read
+	msgs.forEach(msg => msgRead(msg, req.body.id));
 	res.json({
-		room: room,
-		msgs: room_list[room]
+		msgs: msgs,
+		event: room,
+		next: next
 	})
 })
 
-io.on('connection', (socket) => {
+io.on('connection', socket => {
 
-	socket.on('ACK', (id) => {
+	socket.on('ACK', id => {
 		console.log(`${id}: connect[${socket.id}]`);
-		sock_user_map[socket.id] = id;
+		mapping.addPair(socket, id);
 		let db_user = getUserFromDB(id);
 		db_user.online = true
 		io.emit('USER_UPDATE', stripPwd(db_user));
 	})
 
-	socket.on('JOIN_ROOM', (room) => {
-		console.log(`${sock_user_map[socket.id]}: JOIN_ROOM[${room}]`);
-		socket.join(room);
-	})
+	socket.on('SEND_MSG', (msg, callback) => {
+		let id = mapping.getUser(socket);
+		let room = getRoom(id, msg.dest);
 
-	socket.on('LEAVE_ROOM', (room) => {
-		console.log(`${sock_user_map[socket.id]}: LEAVE_ROOM[${room}]`);
-		socket.leave(room);
-	})
+		// Update the msg
+		msg.id = id;
+		msg.timestamp = Date.now();
+		msg.read = -1;
+		console.log(`${id} SEND_MSG: `, msg);
+		callback(msg);
 
-	socket.on('SEND_MSG', (req) => {
-		let msg = req.payload;
-		msg.timestamp = Date.now()
-		console.log(`${sock_user_map[socket.id]}: SEND_MSG[${JSON.stringify(msg)}]`);
-		room_list[req.room].push(msg);
-		/* Only those in the room need to know the new msg */
-		io.to(req.room).emit('NEW_MSG', msg);
+		room_list[room].push(msg);
+
+		let target = mapping.getSocket(msg.dest);
+		if (target) {
+			// If target is online, send him a notice
+			target.emit('NEW_MSG', msg, (tgt_id) => msgRead(msg, tgt_id));
+		}
+
 	})
 
 	socket.on('disconnect', () => {
-		console.log(`${sock_user_map[socket.id]}: disconnect`);
-		let db_user = getUserFromDB(sock_user_map[socket.id]);
-		delete sock_user_map[socket.id];
+		let id = mapping.getUser(socket);
+		console.log(`${id}: disconnect`);
+		mapping.remove(socket);
+		let db_user = getUserFromDB(id);
 		db_user.online = false;
 		io.emit('USER_UPDATE', stripPwd(db_user));
 	})
