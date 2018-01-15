@@ -17,6 +17,7 @@ class RoomScreen extends Component {
     this.appendMsg = this.appendMsg.bind(this);
     this.loadNextBatch = this.loadNextBatch.bind(this);
     this.checkReadMsg = this.checkReadMsg.bind(this);
+    this.showTimeIdx = this.showTimeIdx.bind(this);
     this.state = {
       msgList: [[true,'abc'],[false,'def'],[true,'ghi']],
       inputMsg: '',
@@ -25,6 +26,7 @@ class RoomScreen extends Component {
       targetID: naviParams.id,
       batchIdx: 0,
       refreshing: false,
+      showDetailTime: -1,
     }
     fetch(AppConstants.SERVER_URL+'/msgs', {
       method: 'POST',
@@ -47,7 +49,7 @@ class RoomScreen extends Component {
   componentWillMount() {
     EventEmitter.on('NEW_MSG', (msg, readCallback) => {
       this.appendMsg(msg);
-      readCallback(selfID);
+      readCallback(this.state.selfID);
     });
     EventEmitter.on('READ', (msg) => {
       this.checkReadMsg(msg);
@@ -113,11 +115,19 @@ class RoomScreen extends Component {
   }
   renderChat() {
     return this.state.msgList.map((value, index) => {
-      return <ChatGrid
+      return <TouchableOpacity
         key={index}
-        isSelf={value.id==this.state.selfID}
-        text={value.msg}
-      />;
+        onPress={() => this.showTimeIdx(index)}>
+        <ChatGrid
+          key={index}
+          isSelf={value.id==this.state.selfID}
+          text={value.msg}
+          read={value.timestamp<=value.read}
+          showTime={index==this.state.showDetailTime}
+          sendTime={value.timestamp}
+          readTime={value.read}
+        />
+      </TouchableOpacity>;
     });
   }
   sendMsg() {
@@ -146,6 +156,7 @@ class RoomScreen extends Component {
       .then(new_json => {
         // TODO: Populate the next batch
         // console.log(`GET_MSGS[${json.idx}]: `, new_json.msgs);
+        this.setState({showDetailTime:-1});
         this.setState({msgList:[...new_json.msgs, ...this.state.msgList]});
         this.setState({batchIdx: new_json.next});
         this.setState({refreshing: false});
@@ -158,7 +169,16 @@ class RoomScreen extends Component {
     if (read_msg.length > 0) {
       read_msg = read_msg[0];
       read_msg.read = msg.read;
+      this.setState({msgList:this.state.msgList})
       // console.log(`READ_${json.event}: `, read_msg);
+    }
+  }
+  showTimeIdx(idx) {
+    if (this.state.showDetailTime != idx) {
+      this.setState({showDetailTime:idx})
+    }
+    else {
+      this.setState({showDetailTime:-1})
     }
   }
 }

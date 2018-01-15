@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     paddingHorizontal: 6,
     justifyContent: 'flex-end',
-    alignItems: 'center',
+    // alignItems: 'center',
     // overflow: 'hidden',
   },
   chatTextSelf:{
@@ -134,8 +134,37 @@ const styles = StyleSheet.create({
     textAlign:'center',
     padding:8,
     borderRadius: 12,
-    backgroundColor: '#dddddd',
+    // backgroundColor: '#dddddd',
+    backgroundColor: '#dddde0',
     overflow: 'hidden',
+  },
+  readCircleView:{
+    alignItems:'flex-end',
+    justifyContent:'flex-end',
+    flex:1,
+  },
+  readCircle:{
+    width:16,
+    height:16,
+    borderRadius:8,
+    backgroundColor: '#0084ff',
+    marginRight: 3,
+  },
+  readText:{
+    color:'white',
+    fontSize:13,
+    fontWeight:'bold',
+    // textAlign:'center',
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+  },
+  sendTimeText:{
+    color: '#4594b3',
+    fontSize: 14,
+  },
+  readTimeText:{
+    color: '#4594b3',
+    fontSize: 12,
   },
   chatFooter:{
     flex:3,

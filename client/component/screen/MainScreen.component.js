@@ -23,6 +23,7 @@ class MainScreen extends Component {
     .then((json) => {
       user_list = json;
       this.setState({roomList: user_list});
+      // console.log(user_list);
     });
   }
   componentWillMount() {

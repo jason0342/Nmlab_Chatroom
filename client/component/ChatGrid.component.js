@@ -10,16 +10,46 @@ class ChatGrid extends Component {
   render() {
     return (
       <View>
-        {this.props.isSelf ? 
+        {this.props.showTime?
+        <View style={[styles.alignCenter]}> 
+          <Text style={[styles.sendTimeText]}>{this.getTime(this.props.sendTime)}</Text>
+        </View>
+        :<View/>
+        }
+        {this.props.isSelf? 
         <View style={[styles.chatTextViewSelf]}>
+          {this.props.read?
+          <View style={[styles.readCircleView]}>
+            <View style={[styles.readCircle, styles.alignCenter]}>
+              <Text style={[styles.readText]}>R</Text>
+            </View>
+          </View>:<View/>
+          }
           <Text style={[styles.chatTextSelf]}>{this.props.text}</Text>
         </View> :
         <View style={[styles.chatTextView]}>
           <Text style={[styles.chatText]}>{this.props.text}</Text>
         </View>
         }
+        {this.props.showTime?
+        <View style={{alignItems:(this.props.isSelf?'flex-end':'flex-start')}}> 
+          <Text style={[styles.sendTimeText]}>
+            {this.getTime(this.props.readTime)==''?' Unseen ':' Seen'+this.getTime(this.props.readTime)}
+          </Text>
+        </View>
+        :<View/>
+        }
       </View>
     );
+  }
+  getTime(ts) {
+    if(ts<0) return '';
+    let time = new Date(ts);
+    let month = String(time.getMonth() + 1);
+    let day = String(time.getDate());
+    let hour = String(time.getHours());
+    let minute = String(time.getMinutes());
+    return ' '+month+'/'+day+' '+hour+':'+minute+' ';
   }
 }
 
