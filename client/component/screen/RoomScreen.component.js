@@ -27,6 +27,7 @@ class RoomScreen extends Component {
       batchIdx: 0,
       refreshing: false,
       showDetailTime: -1,
+      newMsg: true,
     }
     fetch(AppConstants.SERVER_URL+'/msgs', {
       method: 'POST',
@@ -82,7 +83,7 @@ class RoomScreen extends Component {
                 onRefresh={this.loadNextBatch}
               />
             }
-            onContentSizeChange={(w, h) => {this.scrollView.scrollToEnd({animated: true});}}
+            onContentSizeChange={(w, h) => {if(this.state.newMsg) this.scrollView.scrollToEnd({animated: true});}}
             >
             {this.renderChat()}
           </ScrollView>
@@ -142,11 +143,13 @@ class RoomScreen extends Component {
     this.setState({inputMsg:''});
   }
   appendMsg(msg) {
+    this.setState({newMsg:true});
     this.setState({msgList:[...this.state.msgList, msg]});
   }
   loadNextBatch() {
     if (this.state.batchIdx > 0) {
       this.setState({refreshing: true});
+      this.setState({newMsg: false});
       fetch(AppConstants.SERVER_URL+'/msgs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -160,6 +163,7 @@ class RoomScreen extends Component {
         this.setState({msgList:[...new_json.msgs, ...this.state.msgList]});
         this.setState({batchIdx: new_json.next});
         this.setState({refreshing: false});
+        // this.scrollView.scrollTo({y:180, animated:true});
       })
     }
   }
