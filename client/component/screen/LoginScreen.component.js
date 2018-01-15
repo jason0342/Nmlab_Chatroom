@@ -36,6 +36,7 @@ class LoginScreen extends Component {
             underlineColorAndroid='transparent'
             onChangeText={(password)=>{this.setState({password});}}
             value={this.state.password}
+            secureTextEntry={true}
           />
         </View>
         <View style={[styles.footer, styles.alignCenter]}>

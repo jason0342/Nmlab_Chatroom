@@ -29,10 +29,14 @@ class MainScreen extends Component {
     EventEmitter.on('USER_UPDATE', (user) => {
       // console.log(user);
       this.updateRoomList(user);
-    })
+    });
+    EventEmitter.on('NEW_MSG', (msg, readCallback) => {
+      // todo: notification
+    });
   }
   componentWillUnmount() {
     EventEmitter.removeAllListeners("USER_UPDATE");
+    EventEmitter.removeAllListeners("NEW_MSG");
   }
   static navigationOptions = {
     header: null ,

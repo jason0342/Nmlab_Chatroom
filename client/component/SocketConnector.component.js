@@ -13,19 +13,19 @@ class SocketConnector {
     this.socket = SocketIOClient(AppConstants.SERVER_URL);
     this.socket.on('connect', (() => {
       this.connected = true;
-      this.socket.emit("ACK", userID)
+      this.socket.emit("ACK", userID);
     }).bind(this));
 
     this.socket.on('USER_UPDATE', (user) => {
       // console.log(user)
-      EventEmitter.emit('USER_UPDATE', user)
+      EventEmitter.emit('USER_UPDATE', user);
       // do something...
     });
 
-    this.socket.on('NEW_MSG', (msg) => {
+    this.socket.on('NEW_MSG', (msg, readCallback) => {
       // TODO: Add new msg to UI
       // console.log(msg)
-      EventEmitter.emit('NEW_MSG', msg)
+      EventEmitter.emit('NEW_MSG', msg, readCallback);
     })
   }
 
@@ -40,7 +40,15 @@ class SocketConnector {
   }
 
   static sendEvent(eventType, param) {
-    this.socket.emit(eventType, param)
+    this.socket.emit(eventType, param);
+  }
+
+  static addEventListener(event, callback) {
+    this.socket.on(event, callback);
+  }
+ 
+  static removeEventListener(event) {
+    this.socket.removeAllListeners(event);
   }
 }
 
