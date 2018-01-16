@@ -81,7 +81,18 @@ app.post('/login', (req, res) => {
 })
 
 app.get('/users', (req, res) => {
-	res.json(user_list.map(stripPwd));
+	let list = user_list.map(user => {
+		let latest = undefined;
+		let msg_list = room_list[getRoom(user.id, req.query.id)]
+		if (msg_list)
+			latest = msg_list.slice(-1).pop();
+		return {
+			id: user.id,
+			online: user.online,
+			latest: latest
+		}
+	})
+	res.json(list);
 })
 
 app.post('/msgs', (req, res) => {

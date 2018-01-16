@@ -60,7 +60,7 @@ fetch('http://localhost:8888/login', gen_post_req({ id: id, pwd: pwd }))
 		})
 
 
-		fetch('http://localhost:8888/users')
+		fetch(`http://localhost:8888/users?id=${id}`)
 		.then(res => res.json())
 		.then(json => {
 			// TODO: Populate UI with user_list in user list screen
