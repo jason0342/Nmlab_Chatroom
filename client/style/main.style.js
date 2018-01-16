@@ -91,6 +91,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 9,
   },
+  newMsgText:{
+    fontSize:12,
+    color:'red',
+  },
   // chatGrid:{
   //   aspectRatio: 8,
   //   paddingTop: 6,

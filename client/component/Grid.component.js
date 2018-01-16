@@ -7,20 +7,31 @@ class Grid extends Component {
     super(props);
     this.renderGridImage = this.renderGridImage.bind(this);
     this.gridButtonStyle = this.gridButtonStyle.bind(this);
+    this.renderRead = this.renderRead.bind(this);
+    this.renderColor = this.renderColor.bind(this);
+    this.hasNewMsg = this.hasNewMsg.bind(this);
   }
   render() {
     return (
       <View style={[styles.grid]}>
         <TouchableOpacity
           style={[styles.roomGridButton, 
-            (this.props.value.online?{backgroundColor: 'lightgreen'}:{backgroundColor: 'steelblue'})]}
+            this.renderColor()]}
           onPress={this.props.onGridPress}>
           <View style={[styles.roomGridPictureView]}>
-            <View style={[styles.roomGridPictureBox]}/>
+            <View style={[styles.roomGridPictureBox]}>
+              <Text style={[styles.loginButtonText]}>{this.props.value.id}</Text>
+            </View>
           </View>
           <View style={[styles.roomGridTextView]}>
             <View style={[styles.roomGridTextBox]}>
-              <Text style={[styles.loginButtonText]}>{this.props.value.id}</Text>
+              {(typeof this.props.value.latest !== "undefined")?
+              <Text style={[styles.loginButtonText]}>
+                {this.props.value.latest.id+':\n\t'+this.props.value.latest.msg}
+              </Text>
+              :<View/>
+              }
+              {this.renderRead()}
             </View>
           </View>
           {this.renderGridImage()}
@@ -35,6 +46,36 @@ class Grid extends Component {
     return style
   }
   renderGridImage() {
+  }
+  renderRead() {
+    if (typeof this.props.value.latest === "undefined") return <View/>;
+    if (this.props.value.latest.timestamp > this.props.value.latest.read) return <View/>;
+    if (this.props.value.latest.id != this.props.value.id) return <View/>;
+    if (this.hasNewMsg()) {
+      return <View style={[styles.readCircleView]}>
+          <Text style={[styles.newMsgText]}>New Message!</Text>
+        </View>
+    }
+    return <View style={[styles.readCircleView]}>
+        <View style={[styles.readCircle, styles.alignCenter]}>
+          <Text style={[styles.readText]}>R</Text>
+        </View>
+      </View>;
+  }
+  renderColor() {
+    if(!this.props.value.online) return {backgroundColor: 'steelblue'};
+    if(this.hasNewMsg()) return {backgroundColor: 'red'};
+    return {backgroundColor: 'lightgreen'};
+    
+  }
+  hasNewMsg() {
+    if (typeof this.props.value.latest !== "undefined") {
+      if (this.props.value.latest.id == this.props.value.id) {
+        if (this.props.value.latest.timestamp > this.props.value.latest.read)
+          return true;
+      }
+    }
+    return false;
   }
 }
 

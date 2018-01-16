@@ -18,12 +18,12 @@ class MainScreen extends Component {
       roomList: [],
       userName: this.props.navigation.state.params.userName,
     }
-    fetch(AppConstants.SERVER_URL+'/users')
+    fetch(AppConstants.SERVER_URL+'/users?id='+this.state.userName)
     .then((res) => res.json())
     .then((json) => {
       user_list = json;
       this.setState({roomList: user_list});
-      // console.log(user_list);
+      console.log(user_list);
     });
   }
   componentWillMount() {
