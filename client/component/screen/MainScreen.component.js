@@ -13,6 +13,8 @@ class MainScreen extends Component {
     this.logout = this.logout.bind(this);
     this.enterRoom = this.enterRoom.bind(this);
     this.updateRoomList = this.updateRoomList.bind(this);
+    this.refetchRoomList = this.refetchRoomList.bind(this);
+    this.updateLatestFromRoom = this.updateLatestFromRoom.bind(this);
     this.state = {
       // roomList: [[true,'abc','def'], [false,'123','456']],
       roomList: [],
@@ -21,9 +23,9 @@ class MainScreen extends Component {
     fetch(AppConstants.SERVER_URL+'/users?id='+this.state.userName)
     .then((res) => res.json())
     .then((json) => {
-      user_list = json;
+      user_list = json.filter(user => user.id !== this.state.userName);
       this.setState({roomList: user_list});
-      console.log(user_list);
+      // console.log(user_list);
     });
   }
   componentWillMount() {
@@ -31,8 +33,13 @@ class MainScreen extends Component {
       // console.log(user);
       this.updateRoomList(user);
     });
-    EventEmitter.on('NEW_MSG', (msg, readCallback) => {
-      // todo: notification
+    EventEmitter.on('NEW_MSG_MAIN', (msg, readCallback) => {
+      // console.log('NEW_MSG in main');
+      let i = this.state.roomList.findIndex((value) => {
+        return (value.id == msg.id);
+      });
+      this.state.roomList[i].latest = msg;
+      this.setState({roomList:this.state.roomList});
     });
   }
   componentWillUnmount() {
@@ -47,7 +54,7 @@ class MainScreen extends Component {
     return (
       <View style={styles.container}>
         <View style={[styles.header, styles.alignCenter]}>
-          <Text style={[styles.headerText]}>Chat Room</Text>
+          <Text style={[styles.headerText]}>{this.state.userName}</Text>
         </View>
         <View style={[styles.main]}>
           {this.renderRoomList()}
@@ -82,6 +89,7 @@ class MainScreen extends Component {
     this.props.navigation.navigate('Room', {
       selfID: this.state.userName,
       id: id,
+      callback: ((latest) => {this.updateLatestFromRoom(id, latest)}),
     });
   }
   updateRoomList(user) {
@@ -91,9 +99,25 @@ class MainScreen extends Component {
     if(i == -1) this.setState({roomList: [...this.state.roomList, user]});
     else {
       let roomList = this.state.roomList;
-      roomList[i] = user;
+      roomList[i].online = user.online;
       this.setState({roomList});
     }
+  }
+  refetchRoomList() {
+    fetch(AppConstants.SERVER_URL+'/users?id='+this.state.userName)
+    .then((res) => res.json())
+    .then((json) => {
+      user_list = json.filter(user => user.id !== this.state.userName);
+      this.setState({roomList: user_list});
+      // console.log(user_list);
+    });
+  }
+  updateLatestFromRoom(id, latest) {
+    let i = this.state.roomList.findIndex((value) => {
+      return value.id == id;
+    });
+    this.state.roomList[i].latest = latest;
+    this.setState({roomList:this.state.roomList});
   }
 }
 

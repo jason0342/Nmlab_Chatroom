@@ -25,7 +25,8 @@ class SocketConnector {
     this.socket.on('NEW_MSG', (msg, readCallback) => {
       // TODO: Add new msg to UI
       // console.log(msg)
-      EventEmitter.emit('NEW_MSG', msg, readCallback);
+      EventEmitter.emit('NEW_MSG_MAIN', msg, readCallback);
+      EventEmitter.emit('NEW_MSG_ROOM', msg, readCallback);
     })
   }
 

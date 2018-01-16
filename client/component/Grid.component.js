@@ -49,13 +49,13 @@ class Grid extends Component {
   }
   renderRead() {
     if (typeof this.props.value.latest === "undefined") return <View/>;
-    if (this.props.value.latest.timestamp > this.props.value.latest.read) return <View/>;
-    if (this.props.value.latest.id != this.props.value.id) return <View/>;
     if (this.hasNewMsg()) {
       return <View style={[styles.readCircleView]}>
           <Text style={[styles.newMsgText]}>New Message!</Text>
         </View>
     }
+    if (this.props.value.latest.timestamp > this.props.value.latest.read) return <View/>;
+    if (this.props.value.latest.id == this.props.value.id) return <View/>;
     return <View style={[styles.readCircleView]}>
         <View style={[styles.readCircle, styles.alignCenter]}>
           <Text style={[styles.readText]}>R</Text>
@@ -63,8 +63,8 @@ class Grid extends Component {
       </View>;
   }
   renderColor() {
-    if(!this.props.value.online) return {backgroundColor: 'steelblue'};
     if(this.hasNewMsg()) return {backgroundColor: 'red'};
+    if(!this.props.value.online) return {backgroundColor: 'steelblue'};
     return {backgroundColor: 'lightgreen'};
     
   }

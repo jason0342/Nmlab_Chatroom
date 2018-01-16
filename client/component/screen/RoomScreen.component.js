@@ -48,7 +48,7 @@ class RoomScreen extends Component {
     });
   }
   componentWillMount() {
-    EventEmitter.on('NEW_MSG', (msg, readCallback) => {
+    EventEmitter.on('NEW_MSG_ROOM', (msg, readCallback) => {
       this.appendMsg(msg);
       readCallback(this.state.selfID);
     });
@@ -59,8 +59,9 @@ class RoomScreen extends Component {
   componentWillUnmount() {
     // SocketConnector.sendEvent('LEAVE_ROOM', this.state.room);
     SocketConnector.removeEventListener("READ");
-    EventEmitter.removeAllListeners("NEW_MSG");
+    EventEmitter.removeAllListeners("NEW_MSG_ROOM");
     EventEmitter.removeAllListeners("READ");
+    this.props.navigation.state.params.callback(this.state.msgList[this.state.msgList.length-1]);
   }
   static navigationOptions = {
     header: null ,
