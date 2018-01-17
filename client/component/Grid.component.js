@@ -9,6 +9,7 @@ class Grid extends Component {
     this.gridButtonStyle = this.gridButtonStyle.bind(this);
     this.renderRead = this.renderRead.bind(this);
     this.renderColor = this.renderColor.bind(this);
+    this.renderMsg = this.renderMsg.bind(this);
     this.hasNewMsg = this.hasNewMsg.bind(this);
   }
   render() {
@@ -26,8 +27,9 @@ class Grid extends Component {
           <View style={[styles.roomGridTextView]}>
             <View style={[styles.roomGridTextBox]}>
               {(typeof this.props.value.latest !== "undefined")?
-              <Text style={[styles.loginButtonText]}>
-                {((this.props.value.latest.id==this.props.value.id)?this.props.value.latest.id:'You')+':\n\t'+this.props.value.latest.msg}
+              <Text style={[styles.loginButtonText]}
+                numberOfLines={3}>
+                {this.renderMsg()}
               </Text>
               :<View/>
               }
@@ -61,6 +63,10 @@ class Grid extends Component {
           <Text style={[styles.readText]}>R</Text>
         </View>
       </View>;
+  }
+  renderMsg() {
+    let msg = this.props.value.latest.msg;
+    return ((this.props.value.latest.id==this.props.value.id)?this.props.value.latest.id:'You')+':\n\t'+msg;
   }
   renderColor() {
     if(this.hasNewMsg()) return {backgroundColor: 'red'};

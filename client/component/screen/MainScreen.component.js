@@ -39,7 +39,7 @@ class MainScreen extends Component {
         return (value.id == msg.id);
       });
       this.state.roomList[i].latest = msg;
-      this.setState({roomList:this.state.roomList});
+      // this.setState({roomList:this.state.roomList});
     });
   }
   componentWillUnmount() {
