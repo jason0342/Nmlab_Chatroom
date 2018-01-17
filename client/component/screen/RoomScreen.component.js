@@ -18,6 +18,7 @@ class RoomScreen extends Component {
     this.loadNextBatch = this.loadNextBatch.bind(this);
     this.checkReadMsg = this.checkReadMsg.bind(this);
     this.showTimeIdx = this.showTimeIdx.bind(this);
+    this.onHeaderPress = this.onHeaderPress.bind(this);
     this.state = {
       msgList: [[true,'abc'],[false,'def'],[true,'ghi']],
       inputMsg: '',
@@ -28,6 +29,7 @@ class RoomScreen extends Component {
       refreshing: false,
       showDetailTime: -1,
       newMsg: true,
+      otherNewMsg: [],
     }
     fetch(AppConstants.SERVER_URL+'/msgs', {
       method: 'POST',
@@ -49,7 +51,10 @@ class RoomScreen extends Component {
   }
   componentWillMount() {
     EventEmitter.on('NEW_MSG_ROOM', (msg, readCallback) => {
-      if(msg.id != this.state.targetID && msg.dest != this.state.targetID) return;
+      if(msg.id != this.state.targetID && msg.dest != this.state.targetID) {
+        this.setState({otherNewMsg: [...this.state.otherNewMsg, msg.id]});
+        return;
+      }
       this.appendMsg(msg);
       readCallback(this.state.selfID);
     });
@@ -73,8 +78,10 @@ class RoomScreen extends Component {
       <View style={styles.container}>
         <TouchableOpacity
           style={[styles.header, styles.alignCenter]}
-          onPress={this.leaveRoom}>
-          <Text style={[styles.headerText]}>{naviParams.id}</Text>
+          onPress={this.onHeaderPress}>
+          <Text style={[styles.headerText, this.state.otherNewMsg.length==0?{}:{fontSize:24, color:'red'}]}>
+            {this.state.otherNewMsg.length==0? naviParams.id: 'New Message From '+this.state.otherNewMsg[0]+(this.state.otherNewMsg.length==1?'!':' and others!')}
+          </Text>
         </TouchableOpacity>
         <View style={[styles.main]}>
           <ScrollView
@@ -186,6 +193,13 @@ class RoomScreen extends Component {
     else {
       this.setState({showDetailTime:-1})
     }
+  }
+  onHeaderPress() {
+    if(this.state.otherNewMsg.length!=0) {
+      this.setState({otherNewMsg:[]})
+      return;
+    }
+    this.leaveRoom();
   }
 }
 
