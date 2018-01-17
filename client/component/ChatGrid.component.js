@@ -49,6 +49,7 @@ class ChatGrid extends Component {
     let day = String(time.getDate());
     let hour = String(time.getHours());
     let minute = String(time.getMinutes());
+    if(time.getMinutes()<10) minute = '0' + minute;
     return ' '+month+'/'+day+' '+hour+':'+minute+' ';
   }
 }

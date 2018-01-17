@@ -27,7 +27,7 @@ class Grid extends Component {
             <View style={[styles.roomGridTextBox]}>
               {(typeof this.props.value.latest !== "undefined")?
               <Text style={[styles.loginButtonText]}>
-                {this.props.value.latest.id+':\n\t'+this.props.value.latest.msg}
+                {((this.props.value.latest.id==this.props.value.id)?this.props.value.latest.id:'You')+':\n\t'+this.props.value.latest.msg}
               </Text>
               :<View/>
               }

@@ -49,6 +49,7 @@ class RoomScreen extends Component {
   }
   componentWillMount() {
     EventEmitter.on('NEW_MSG_ROOM', (msg, readCallback) => {
+      if(msg.id != this.state.targetID && msg.dest != this.state.targetID) return;
       this.appendMsg(msg);
       readCallback(this.state.selfID);
     });
