@@ -1,8 +1,34 @@
-const express = require('express')
-const app = express()
-const http = require('http').Server(app)
-const io = require('socket.io')(http)
-const bodyParser = require('body-parser')
+const express = require('express');
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const bodyParser = require('body-parser');
+const { Wit } = require('node-wit');
+
+const MY_TOKEN = 'ZH6CAT6LR3HSH6QWJPSJCXUZCVGTRO7X';
+
+const wit = new Wit({ accessToken: MY_TOKEN });
+
+function getUserFromDB(id) {
+	let filtered = user_list.filter(user => user.id === id);
+	if (filtered.length > 0)
+		return filtered[0];
+	else
+		return null;
+}
+
+const stripPwd = user => { return { id: user.id, online: user.online } }
+
+const getRoom = (a, b) => [a, b].sort().join();
+
+const msgRead = (msg, id) => {
+	if (msg.read === -1 && msg.dest === id) {
+		let event = getRoom(msg.id, msg.dest);
+		msg.read = Date.now();
+		console.log(`READ_${event}: `, msg);
+		io.emit(event, { timestamp: msg.timestamp, read: msg.read });
+	}
+}
 
 class SocketUserMap {
 	constructor() {
@@ -30,36 +56,104 @@ class SocketUserMap {
 	}
 }
 
-// TODO: Use MongoDB
 let user_list = []
 let room_list = {}
 let mapping = new SocketUserMap();
 
-let test_user = {
-	id: 'test',
-	pwd: '123',
-	online: false
+let bot = {
+	id: 'Bot',
+	online: true
 };
-user_list.push(test_user);
+user_list.push(bot);
 
-function getUserFromDB(id) {
-	let filtered = user_list.filter(user => user.id === id);
-	if (filtered.length > 0)
-		return filtered[0];
-	else
-		return null;
-}
+class ChatBot {
 
-const stripPwd = user => { return { id: user.id, online: user.online } }
+	constructor(socket) {
+		this.state = {};
+		this.socket = socket;
+	}
 
-const getRoom = (a, b) => [a, b].sort().join();
+	sendMsg(msg, id) {
+		room_list[getRoom(id, bot.id)].push(msg);
+		this.socket.emit('NEW_MSG', msg, (tgt_id) => msgRead(msg, tgt_id));
+	}
 
-const msgRead = (msg, id) => {
-	if (msg.read === -1 && msg.dest === id) {
-		let event = getRoom(msg.id, msg.dest);
-		msg.read = Date.now();
-		console.log(`READ_${event}: `, msg);
-		io.emit(event, { timestamp: msg.timestamp, read: msg.read });
+	handleData(data, id) {
+		let intent = data.entities.intent;
+		if (intent && (intent[0].value !== this.state.intent)) {
+			this.state = {
+				intent: intent[0].value
+			};
+		}
+		console.log(data.entities);
+		switch(this.state.intent) {
+			case 'weather':
+				if (data.entities.location)
+					this.state.location = data.entities.location[0].value;
+
+				if (! this.state.location) {
+					this.sendMsg({
+						timestamp: Date.now(),
+						id: bot.id,
+						dest: id,
+						msg: 'What is your location?',
+						read: -1,
+					}, id)
+				} else {
+					this.sendMsg({
+						timestamp: Date.now(),
+						id: bot.id,
+						dest: id,
+						msg: `Result of weather in ${this.state.location}`,
+						read: -1,
+					}, id)
+					this.state = {};
+				}
+				break;
+			case 'set_timer':
+				if (data.entities.duration) {
+					this.state.duration = data.entities.duration[0].normalized.value;
+				}
+				if (! this.state.duration) {
+					// How long should I wait?
+					this.sendMsg({
+						timestamp: Date.now(),
+						id: bot.id,
+						dest: id,
+						msg: 'How long should I wait?',
+						read: -1,
+					}, id)
+				} else {
+					this.sendMsg({
+						timestamp: Date.now(),
+						id: bot.id,
+						dest: id,
+						msg: `OK, I'll remind you in ${this.state.duration} secs`,
+						read: -1,
+					}, id)
+
+					setTimeout(() => {
+						this.sendMsg({
+							timestamp: Date.now(),
+							id: bot.id,
+							dest: id,
+							msg: `Times up!`,
+							read: -1,
+						}, id)
+					}, this.state.duration * 1000)
+
+					this.state = {};
+				}
+				break;
+			default:
+				this.sendMsg({
+					timestamp: Date.now(),
+					id: bot.id,
+					dest: id,
+					msg: `I dunno what you're saying`,
+					read: -1,
+				}, id)
+		}
 	}
 }
 
@@ -113,11 +207,13 @@ app.post('/msgs', (req, res) => {
 
 io.on('connection', socket => {
 
+	let botHandler = new ChatBot(socket);
+
 	socket.on('ACK', id => {
 		console.log(`${id}: connect[${socket.id}]`);
 		mapping.addPair(socket, id);
 		let db_user = getUserFromDB(id);
-		db_user.online = true
+		db_user.online = true;
 		io.emit('USER_UPDATE', stripPwd(db_user));
 	})
 
@@ -134,12 +230,18 @@ io.on('connection', socket => {
 
 		room_list[room].push(msg);
 
-		let target = mapping.getSocket(msg.dest);
-		if (target) {
-			// If target is online, send him a notice
-			target.emit('NEW_MSG', msg, (tgt_id) => msgRead(msg, tgt_id));
-		}
+		let dest = msg.dest;
 
+		if (dest === bot.id) {
+			msgRead(msg, bot.id);
+			wit.message(msg.msg).then(data => botHandler.handleData(data, id))
+		} else {
+			let target = mapping.getSocket(dest);
+			if (target) {
+				// If target is online, send him a notice
+				target.emit('NEW_MSG', msg, (tgt_id) => msgRead(msg, tgt_id));
+			}
+		}
 	})
 
 	socket.on('disconnect', () => {
