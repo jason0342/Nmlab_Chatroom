@@ -7,6 +7,8 @@ import EmptyDOM from '../EmptyDOM.component.js';
 import Grid from '../Grid.component.js';
 import AppConstants from '../../constant/AppConstants.js'
 
+console.disableYellowBox = true;
+
 class MainScreen extends Component {
   constructor(props) {
     super(props);
@@ -39,7 +41,7 @@ class MainScreen extends Component {
         return (value.id == msg.id);
       });
       this.state.roomList[i].latest = msg;
-      // this.setState({roomList:this.state.roomList});
+      this.setState({roomList:this.state.roomList});
     });
   }
   componentWillUnmount() {

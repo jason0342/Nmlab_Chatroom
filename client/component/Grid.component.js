@@ -27,7 +27,7 @@ class Grid extends Component {
           <View style={[styles.roomGridTextView]}>
             <View style={[styles.roomGridTextBox]}>
               {(typeof this.props.value.latest !== "undefined")?
-              <Text style={[styles.loginButtonText]}
+              <Text style={[styles.loginButtonText,{fontSize:18}]}
                 numberOfLines={3}>
                 {this.renderMsg()}
               </Text>
